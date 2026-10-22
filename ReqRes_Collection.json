@@ -18,7 +18,16 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst data = pm.response.json();\r\n\r\npm.test(\"Name và job đúng dữ liệu đã gửi\", function () {\r\n    const sent = JSON.parse(pm.request.body.raw);\r\n    pm.expect(data.name).to.eql(sent.name);\r\n    pm.expect(data.job).to.eql(sent.job);\r\n});\r\n\r\npm.environment.set(\"userId\", data.id);"
+                  "pm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst data = pm.response.json();\r\nconst sent = JSON.parse(pm.request.body.raw);\r\n\r\npm.test(\"Name và job đúng dữ liệu đầu vào\", function () {\r\n    const expectedName = pm.iterationData.has(\"name\")\r\n        ? pm.iterationData.get(\"name\") : sent.name;\r\n\r\n    const expectedJob = pm.iterationData.has(\"job\")\r\n        ? pm.iterationData.get(\"job\") : sent.job;\r\n\r\n    pm.expect(data.name).to.eql(expectedName);\r\n    pm.expect(data.job).to.eql(expectedJob);\r\n});\r\n\r\npm.environment.set(\"userId\", data.id);"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.iterationData.has(\"name\") && pm.iterationData.has(\"job\")) {\r\n    pm.request.body.update(JSON.stringify({\r\n        name: pm.iterationData.get(\"name\"),\r\n        job: pm.iterationData.get(\"job\")\r\n    }));\r\n}"
                 ]
               }
             }
